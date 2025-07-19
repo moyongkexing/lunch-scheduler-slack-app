@@ -1,6 +1,8 @@
 import { DefineWorkflow, Schema } from "deno-slack-sdk/mod.ts";
 import { LunchParticipantsExtractorDefinition } from "@functions/lunch_participants_extractor.ts";
 import { LunchBookingProcessorDefinition } from "@functions/lunch_booking_processor.ts";
+import { UserEmailExtractorDefinition } from "@functions/user_email_extractor.ts";
+import { GoogleCalendarClientDefinition } from "@functions/google_calendar_client.ts";
 
 /**
  * 統合ランチスケジューラーワークフロー
@@ -43,7 +45,30 @@ const extractDataStep = LunchMessageWorkflow.addStep(
 );
 
 /**
- * Step 2: ランチデータ処理
+ * Step 2: ユーザーのメールアドレス取得
+ */
+const getUserEmails = LunchMessageWorkflow.addStep(
+  UserEmailExtractorDefinition,
+  {
+    user_ids: extractDataStep.outputs.extracted_users,
+  },
+);
+
+/**
+ * Step 3: Google Calendarで空き時間チェック（条件付き実行）
+ * TODO: 複数ユーザーのカレンダーを統合処理
+ */
+const checkCalendar = LunchMessageWorkflow.addStep(
+  GoogleCalendarClientDefinition,
+  {
+    user_email: "example@gmail.com", // TODO: 動的にユーザーメール設定
+    start_time: "2024-07-20T09:00:00Z", // TODO: 動的に設定
+    end_time: "2024-07-20T18:00:00Z",
+  },
+);
+
+/**
+ * Step 4: ランチデータ処理（カレンダー情報を含む）
  */
 const processLunchData = LunchMessageWorkflow.addStep(
   LunchBookingProcessorDefinition,
@@ -51,17 +76,20 @@ const processLunchData = LunchMessageWorkflow.addStep(
     message: "ランチスケジューラー",
     user: LunchMessageWorkflow.inputs.user_id,
     lunchData: {
-      purpose: "schedule_check", // 空き時間チェック用途
+      purpose: "schedule_check",
       datetime: extractDataStep.outputs.extracted_datetime,
       participants: extractDataStep.outputs.extracted_users,
       has_mentions: extractDataStep.outputs.has_mentions,
       has_datetime: extractDataStep.outputs.has_datetime,
+      user_emails_json: getUserEmails.outputs.user_emails_json,
+      calendar_events_json: checkCalendar.outputs.events_json,
+      free_time_slots_json: checkCalendar.outputs.free_time_slots_json,
     },
   },
 );
 
 /**
- * Step 3: 結果メッセージ送信
+ * Step 5: 結果メッセージ送信
  */
 LunchMessageWorkflow.addStep(
   Schema.slack.functions.SendMessage,

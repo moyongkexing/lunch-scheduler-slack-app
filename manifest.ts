@@ -3,6 +3,8 @@ import { LunchMessageWorkflow } from "@workflows/lunch_message_workflow.ts";
 import { SampleObjectDatastore } from "@datastores/sample_datastore.ts";
 import { LunchParticipantsExtractorDefinition } from "@functions/lunch_participants_extractor.ts";
 import { LunchBookingProcessorDefinition } from "@functions/lunch_booking_processor.ts";
+import { UserEmailExtractorDefinition } from "@functions/user_email_extractor.ts";
+import { GoogleCalendarClientDefinition } from "@functions/google_calendar_client.ts";
 
 /**
  * アプリマニフェストにはアプリの設定が含まれています。
@@ -16,6 +18,8 @@ export default Manifest({
   functions: [
     LunchParticipantsExtractorDefinition,
     LunchBookingProcessorDefinition,
+    UserEmailExtractorDefinition,
+    GoogleCalendarClientDefinition,
   ],
   workflows: [LunchMessageWorkflow],
   datastores: [SampleObjectDatastore],
@@ -30,5 +34,7 @@ export default Manifest({
     "im:history",
     "mpim:history",
     "app_mentions:read",
+    "users:read",
+    "users:read.email",
   ],
 });

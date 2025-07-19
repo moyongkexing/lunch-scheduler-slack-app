@@ -28,6 +28,18 @@ export const LunchBookingProcessorDefinition = DefineFunction({
           },
           has_mentions: { type: Schema.types.boolean },
           has_datetime: { type: Schema.types.boolean },
+          user_emails_json: {
+            type: Schema.types.string,
+            description: "JSON文字列化されたユーザー情報",
+          },
+          calendar_events_json: {
+            type: Schema.types.string,
+            description: "JSON文字列化されたカレンダーイベント",
+          },
+          free_time_slots_json: {
+            type: Schema.types.string,
+            description: "JSON文字列化された空き時間スロット",
+          },
         },
       },
     },
@@ -53,6 +65,14 @@ export const LunchBookingProcessor = SlackFunction(
     const participants = lunchData?.participants || [];
     const has_mentions = lunchData?.has_mentions || false;
     const has_datetime = lunchData?.has_datetime || false;
+    const user_emails_json = lunchData?.user_emails_json || "[]";
+    const calendar_events_json = lunchData?.calendar_events_json || "[]";
+    const free_time_slots_json = lunchData?.free_time_slots_json || "[]";
+    
+    // JSON文字列をパース
+    const user_emails = JSON.parse(user_emails_json);
+    const calendar_events = JSON.parse(calendar_events_json);
+    const free_time_slots = JSON.parse(free_time_slots_json);
 
     let updatedMsg = "";
 
@@ -72,11 +92,22 @@ ${datetime}にランチできる方はリアクションしてください！ �
     } // パターン2: メンションのみ指定 - その人たちで空いている時間を探す
     else if (has_mentions && !has_datetime) {
       const participantsList = participants.map((p) => `<@${p}>`).join(", ");
+      
+      // カレンダー情報があれば表示
+      let calendarInfo = "";
+      if (free_time_slots.length > 0) {
+        calendarInfo = `\n📅 **空き時間スロット**:\n${
+          free_time_slots.map((slot: any) => 
+            `• ${new Date(slot.start).toLocaleTimeString()} - ${new Date(slot.end).toLocaleTimeString()}`
+          ).join("\n")
+        }`;
+      }
+      
       updatedMsg = `🍽️ **ランチ日程調整**
 
 👤 **投稿者**: <@${inputs.user}>
 👥 **参加者**: ${participantsList}
-📅 **日時**: 調整中
+📅 **日時**: 調整中${calendarInfo}
 
 みんなでランチしませんか？都合の良い日時を教えてください！ 🗓️`;
     } // パターン3: 日時とメンション両方指定 - その人たちがその時刻に参加可能かチェック

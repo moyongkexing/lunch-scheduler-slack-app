@@ -65,7 +65,7 @@ export const LunchParticipantsExtractorDefinition = DefineFunction({
  */
 export const LunchParticipantsExtractor = SlackFunction(
   LunchParticipantsExtractorDefinition,
-  ({ inputs }) => {
+  async ({ inputs, client }) => {
     console.log("called");
     const { message_text } = inputs;
 
@@ -75,16 +75,25 @@ export const LunchParticipantsExtractor = SlackFunction(
     // @文字列が含まれているかチェック
     const hasMentions = message_text.includes("@");
 
+    // App自身のIDを取得
+    const authResponse = await client.auth.test();
+    const appUserId = authResponse.ok ? authResponse.user_id : null;
+    console.log(`App User ID: ${appUserId}`);
+
     // ユーザーメンション抽出（@が含まれている場合のみ）
     let extractedUsers: string[] = [];
     if (hasMentions) {
       const mentionPattern = /<@(\w+)>/g;
       const mentions = message_text.match(mentionPattern);
       if (mentions) {
-        // アプリ自身のメンションを除外（Aから始まるIDはBot/App）
+        // アプリ自身のメンションを除外
         extractedUsers = mentions
           .map((mention) => mention.replace(/<@|>/g, ""))
-          .filter((userId) => !userId.startsWith("A"));
+          .filter((userId) => {
+            // App自身とBot/Appを除外
+            return userId !== appUserId && !userId.startsWith("A");
+          });
+        console.log(`抽出されたユーザー: ${extractedUsers.join(", ")}`);
       }
     }
 
