@@ -2,11 +2,11 @@ import { DefineWorkflow, Schema } from "deno-slack-sdk/mod.ts";
 import { SampleFunctionDefinition } from "../functions/sample_function.ts";
 
 /**
- * A workflow is a set of steps that are executed in order.
- * Each step in a workflow is a function.
+ * ワークフローは順番に実行されるステップのセットです。
+ * ワークフロー内の各ステップは関数です。
  * https://api.slack.com/automation/workflows
  *
- * This workflow uses interactivity. Learn more at:
+ * このワークフローはインタラクティビティを使用します。詳細はこちら:
  * https://api.slack.com/automation/forms#add-interactivity
  */
 const SampleWorkflow = DefineWorkflow({
@@ -30,8 +30,8 @@ const SampleWorkflow = DefineWorkflow({
 });
 
 /**
- * For collecting input from users, we recommend the
- * OpenForm Slack function as a first step.
+ * ユーザーからの入力を収集するには、
+ * 最初のステップとしてOpenForm Slack関数を推奨します。
  * https://api.slack.com/automation/functions#open-a-form
  */
 const inputForm = SampleWorkflow.addStep(
@@ -58,10 +58,10 @@ const inputForm = SampleWorkflow.addStep(
 );
 
 /**
- * Custom functions are reusable building blocks
- * of automation deployed to Slack infrastructure. They
- * accept inputs, perform calculations, and provide
- * outputs, just like typical programmatic functions.
+ * カスタム関数は、Slackインフラストラクチャにデプロイされる
+ * 自動化の再利用可能なビルディングブロックです。
+ * 通常のプログラム関数と同様に、入力を受け取り、
+ * 計算を実行し、出力を提供します。
  * https://api.slack.com/automation/functions/custom
  */
 const sampleFunctionStep = SampleWorkflow.addStep(SampleFunctionDefinition, {
@@ -70,9 +70,10 @@ const sampleFunctionStep = SampleWorkflow.addStep(SampleFunctionDefinition, {
 });
 
 /**
- * SendMessage is a Slack function. These are
- * Slack-native actions, like creating a channel or sending
- * a message and can be used alongside custom functions in a workflow.
+ * SendMessageはSlack関数です。これらは
+ * チャンネルの作成やメッセージの送信などの
+ * Slackネイティブアクションであり、ワークフロー内で
+ * カスタム関数と一緒に使用できます。
  * https://api.slack.com/automation/functions
  */
 SampleWorkflow.addStep(Schema.slack.functions.SendMessage, {
