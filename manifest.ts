@@ -1,18 +1,23 @@
 import { Manifest } from "deno-slack-sdk/mod.ts";
-import { SampleWorkflow } from "@workflows/sample_workflow.ts";
+import { LunchMessageWorkflow } from "@workflows/lunch_message_workflow.ts";
 import { SampleObjectDatastore } from "@datastores/sample_datastore.ts";
+import { LunchParticipantsExtractorDefinition } from "@functions/lunch_participants_extractor.ts";
+import { LunchBookingProcessorDefinition } from "@functions/lunch_booking_processor.ts";
 
 /**
- * The app manifest contains the app's configuration. This
- * file defines attributes like app name and description.
+ * アプリマニフェストにはアプリの設定が含まれています。
+ * このファイルではアプリ名や説明などの属性を定義します。
  * https://api.slack.com/automation/manifest
  */
 export default Manifest({
-  name: "lunch-scheduler",
-  description: "A template for building Slack apps with Deno",
+  name: "lunch-scheduler-20250720",
+  description: "ランチスケジューラー - ランチ予約アプリ",
   icon: "assets/default_new_app_icon.png",
-  workflows: [SampleWorkflow],
-  outgoingDomains: [],
+  functions: [
+    LunchParticipantsExtractorDefinition,
+    LunchBookingProcessorDefinition,
+  ],
+  workflows: [LunchMessageWorkflow],
   datastores: [SampleObjectDatastore],
   botScopes: [
     "commands",
@@ -20,5 +25,10 @@ export default Manifest({
     "chat:write.public",
     "datastore:read",
     "datastore:write",
+    "channels:history",
+    "groups:history",
+    "im:history",
+    "mpim:history",
+    "app_mentions:read",
   ],
 });
