@@ -1,5 +1,5 @@
 import { DefineWorkflow, Schema } from "deno-slack-sdk/mod.ts";
-import { SampleFunctionDefinition } from "../functions/sample_function.ts";
+import { SampleFunctionDefinition } from "@functions/sample_function.ts";
 
 /**
  * ワークフローは順番に実行されるステップのセットです。
@@ -9,7 +9,7 @@ import { SampleFunctionDefinition } from "../functions/sample_function.ts";
  * このワークフローはインタラクティビティを使用します。詳細はこちら:
  * https://api.slack.com/automation/forms#add-interactivity
  */
-const SampleWorkflow = DefineWorkflow({
+export const SampleWorkflow = DefineWorkflow({
   callback_id: "sample_workflow",
   title: "Sample workflow",
   description: "A sample workflow",
@@ -80,5 +80,3 @@ SampleWorkflow.addStep(Schema.slack.functions.SendMessage, {
   channel_id: inputForm.outputs.fields.channel,
   message: sampleFunctionStep.outputs.updatedMsg,
 });
-
-export default SampleWorkflow;
